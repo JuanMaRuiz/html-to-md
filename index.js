@@ -1,11 +1,11 @@
 const TurndownService = require('turndown');
-const axios = require('axios');
 const { logError, logSuccess } = require('./lib/logger');
 const fs = require('fs');
-
+const handleRequest = require('./lib/requestHandler');
 const page  = process.argv[2];
+const fileName = process.argv[3] || 'output.md';
 
-axios.get(page).then( (output) => {
+handleRequest(page).then( output => {
     const turndownService = new TurndownService();
     const partsToremove = [
         'script',
@@ -16,13 +16,12 @@ axios.get(page).then( (output) => {
         turndownService.remove(item);
     });
     const content = turndownService.turndown(output.data);
-    const file = 'output.md';
-    fs.writeFile(file, content, (err) => {
+    fs.writeFile(fileName, content, (err) => {
         if (err) {
-            logError('🤦 There was an error writing file');
+            logError(`🤦 There was an error writing file ${fileName} => ${err}`);
             process.exit(1);
         }
 
-        logSuccess(`👏 File "${file}" was created!!`);
+        logSuccess(`👏 File "${fileName}" was created!!`);
     });
 });
